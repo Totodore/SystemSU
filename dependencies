@@ -1,0 +1,4 @@
+To run, this Script needs :
+nmap
+geoip-bin
+sudo wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
