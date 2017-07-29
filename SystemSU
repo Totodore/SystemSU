@@ -1,0 +1,468 @@
+ 
+#!/usr/bin/env bash
+
+
+#Variables
+Choice=""
+Choice1="3"
+URL=""
+var=""
+ip=""
+lastip=""
+pathgeoip=/usr/share/GeoIP/GeoLiteCity.dat
+UID_ROOT=0     
+E_NONROOT=67   
+myipp=`wget -qO - icanhazip.com`
+lanip=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1 -d'/'`
+lanip6=`ip addr | grep 'state UP' -A4 | tail -n1 | awk '{print $2}' | cut -f1 -d'/'`
+png=""
+RAND=""
+quit=0
+
+#color
+cyan='\e[1;36m'
+pink='\e[1;35m'
+green='\e[1;34m'
+oakgreen='\033[92m'
+lightgreen='\e[1;32m'
+white='\e[1;37m'
+red='\e[1;31m'
+yellow='\e[1;33m'
+BlueF='\e[1;34m' #Biru
+RESET="\033[00m" #normal
+orange='\e[38;5;166m'
+
+#functions
+spinlong ()
+{
+    echo -e "\n"
+    bar=" +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "
+    barlength=${#bar}
+    i=0
+    while ((i < 100)); do
+        n=$((i*barlength / 100))
+        printf "\e[00;32m\r[%-${barlength}s]\e[00m" "${bar:0:n}"
+        ((i += RANDOM%5+2))
+        sleep 0.02
+    done
+}
+
+function oniport
+{
+clear
+spinlong
+echo ""
+echo ""
+echo ""
+echo -e $cyan "		ip scan on the local network : "
+echo ""
+echo -e $orange "Separate the ip from a space."
+echo ""
+echo -e $orange "What ip do you want to scan ?"
+echo ""
+echo -ne "ip ─────► "
+read ip 
+nmap -Pn $ip
+echo ""
+read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+menu
+}
+function alliport
+{
+clear
+spinlong
+echo ""
+echo ""
+echo ""
+echo -e $orange"		scanning all ip on the local network"
+echo ""
+echo -e $cyan"	$orange 	The scan may take some times"
+echo ""
+echo -e "$orange 		Press [ENTER] key to display infos"
+echo ""
+nmap -Pn 192.168.0.0/24
+echo ""
+read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+menu
+}
+function oneipos
+{
+clear
+spinlong
+echo ""
+echo -e $orange "					       _.-;;-._ "
+echo -e $orange "					'-..-'|   ||   |"
+echo -e $orange "					'-..-'|_.-;;-._|"
+echo -e "$orange Operating system-scan :		'-..-'|   ||   |		"
+echo -e $orange "Separate the ip from a space.		'-..-'|_.-''-._|		" 
+echo -ne "ip ─────► "
+read ip
+nmap -O --osscan-guess $ip
+read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+menu
+}
+function allipos
+{
+clear
+spinlong
+echo ""
+echo -e $orange "						    .---.	"
+echo -e "						   /     \ "
+echo -e "						   \.@-@./"
+echo -e "  		Operating system-scan :		   /^\_/^\ "
+echo -e " 						  //  _  \\\\\ "
+echo -e $orange "$orange The scan may take some times 			  |\     )|__"
+echo -e $orange"					         /^\_>  <_/  \ "
+echo -e "$orange Press [ENTER] key to display infos		 \__/'---'\__/"
+nmap -O --osscan-guess 192.168.0.0/24 
+wait
+read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+menu
+}
+
+function web-sitescan
+{
+clear
+spinlong
+echo ""
+echo ""
+echo -e $green"		      _                                      _"
+echo -e $green"		 ~O  (_|  . - ' - . _ . - ' - . _ . - ' - . |_)  O"
+echo -e $green"		|(_~|^~~|                                  |~~^|~_)|"
+echo -e $green"		TT/_ T T                                    T T _\HH "
+echo -e $green"	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+echo "" 
+echo  -e $cyan"			$cyan web-site scanning :"
+echo ""
+echo -e $cyan"		Type an Hostname, for example : www.google.com"
+echo
+echo -ne "$red Hostname ─────►  "
+read URL
+nmap $URL > logtemp.txt
+lastip=$(grep "com" logtemp.txt | cut -d"(" -f2 | cut -d")" -f1) 
+lastipname=$(grep "report" logtemp.txt | cut -d "(" -f1  | cut -d "f" -f2 | cut -d "r" -f 2)
+rm logtemp.txt
+nmap $URL 
+echo ""
+read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+menu
+}
+function iplocalize
+{
+clear
+spinlong
+echo ""
+echo ""
+echo ""
+echo -e "$cyan			IP localisator : "
+echo ""
+echo -e "$cyan The precision of the location depends on the Internet provider base I.S.P."
+echo ""
+echo ""
+echo -e $orange "+--------------------------------------+"
+echo -e $orange "|$yellow [$cyan 1 $yellow] $orange $lastip-$URL                            "
+echo -e $orange "|$yellow [$cyan 2 $yellow] $orange Enter an IP manually"
+echo -e $orange "+--------------------------------------+"
+echo ""
+echo -ne " ─────► "
+read Choice
+case $Choice in
+	1)
+		if [[ $lastip != "" ]]
+			then
+			echo ""
+			geoiplookup $lastip -f $pathgeoip
+			echo ""
+			read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+			menu
+		else
+			echo -ne $orange "Wrong ip : "
+			echo ""
+			read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+			menu
+		fi
+		;;
+	2)
+		echo
+		echo -ne "$lightgreen Enter an ip : "
+		read ip
+		geoiplookup $ip -f $pathgeoip
+		echo ""
+		read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
+		menu
+		;;
+	*)
+		clear
+		echo -ne "$red Error, Press [ENTER] key go to options menu"
+		read -n 1 key
+		menu
+		;;
+	esac
+}
+function menu
+{
+resize -s 43 89
+clear
+clear
+echo -e $red "  .d8888b.                    888                           .d8888b.  888     888 "
+echo -e $red " d88P  Y88b                   888                          d88P  Y88b 888     888 "
+echo -e $red " Y88b.                        888                          Y88b.      888     888 "
+echo -e $red "  'Y888b.   888  888 .d8888b  888888 .d88b.  88888b.d88b.   'Y888b.   888     888 "
+echo -e $red "     'Y88b. 888  888 88K      888   d8P  Y8b 888 '888 '88b     'Y88b. 888     888 "
+echo -e $red "       '888 888  888 'Y8888b. 888   88888888 888  888  888       '888 888     888 "		
+echo -e $red " Y88b  d88P Y88b 888      X88 Y88b. Y8b.     888  888  888 Y88b  d88P Y88b. .d88P  "
+echo -e $red "  'Y8888P'   'Y88888  88888P'  'Y888 'Y8888  888  888  888  'Y8888P'   'Y88888P' "
+echo -e $red "                 888 "
+echo -e $red "            Y8b d88P "
+echo -e $red "              'Y88P' "
+echo
+echo -e $orange "								   _.-'|"
+echo -e $orange "							       _.-'    |"
+echo -e $orange "						  	   _.-'        |"
+echo -ne $green "		  -------------------------------"
+echo -e $orange "	.-'____________|______" 
+echo -ne $green "		  | Public IP : $myipp	|" 
+echo -e $orange "	|                     |"
+echo -ne $green "		  | Local IP  : $lanip	|"
+echo -e $orange "	|    Your computer    |"	
+echo -ne $green "		  -------------------------------"
+echo -e $orange "	|      is dead...     |"
+echo -e $orange"							| and it was so alive |"
+echo -e $oakgreen" _____________________________________________          $orange|      _______        |"
+echo -ne "$oakgreen|		____________"
+echo -e $orange"	              $oakgreen|		$orange|     |.-----.|       |"
+echo -ne $oakgreen"|		|$red SystemSU$oakgreen |"
+echo -e "	      	      $oakgreen|  	$orange|     ||x . x||       |"
+echo -ne $oakgreen"|		¯¯¯¯¯¯¯¯¯¯¯¯"
+echo -e $orange "	      	      $oakgreen|  	$orange|     ||_.-._||       |"
+echo -e "$oakgreen|					      |		$orange|      --)-(--        |"
+echo -ne $oakgreen"|  |-$yellow[$cyan 1 $yellow] $orange-Scan open ports"
+echo -e "	  	      $oakgreen|	        $orange|    __[=== o]___     |"
+echo -e $oakgreen"|  |					      |		$orange|   |:::::::::::|\    |"
+echo -ne $oakgreen"|  |-$yellow[$cyan 2 $yellow] $orange-Scan Os"
+echo -e "		      	      $oakgreen|  	$orange|    -=========- ()   |"
+echo -e "$oakgreen|  |				      	      |	        $orange| You shouldn't have  |" 
+echo -ne $oakgreen"|  |-$yellow[$cyan 3 $yellow] $orange-Scan web-site"
+echo -e "		      $oakgreen|		$orange|      installed:     |"
+echo -e "$oakgreen|  |				      	      |         $orange|    	              | "
+echo -ne $oakgreen"|  |-$yellow[$cyan 4 $yellow] $orange-IP localisator" 
+echo -e "		      $oakgreen|         $orange|     -= Win'95 =-    | "
+echo -e "$oakgreen|  |			              	      |         $orange|                     |"
+echo -ne $oakgreen"|  |-$yellow[$cyan 5 $yellow] $orange-Exit"
+echo -e "$oakgreen			      |         $orange----------------------- "
+echo -e $oakgreen"|  |				     	      |"
+echo -e $oakgreen"|__|__________________________________________|"
+echo -e "   |  "
+echo -e $oakgreen"-----------------------------"
+echo -e $oakgreen" |$green -[$red SystemSU$green ]-[$yellow Menu$green ]- :$oakgreen|"
+echo -e $oakgreen"-----------------------------"
+echo -ne $oakgreen"   └────► ";tput sgr0
+read Choice
+case $Choice in
+	1)
+		echo ""
+		echo -e "   $oakgreen|-$yellow[$cyan 1 $yellow]$orange-Scan One or some ip on the local network"
+		echo -e "   $oakgreen|"
+		echo -e "   $oakgreen|-$yellow[$cyan 2 $yellow]$orange-Scan All ip on the local network"
+		echo -e "   $oakgreen|"
+		echo -e $oakgreen"-----------------------------"
+		echo -e $oakgreen" |$green -[$red SystemSU$green ]-[$yellow Menu$green ] :$oakgreen |"
+		echo -e $oakgreen"-----------------------------"
+		echo -ne $oakgreen"   └────► ";tput sgr0
+		read Choice1
+		case $Choice1 in
+			1)
+			oniport
+			;;
+			2)
+			alliport
+			;;
+			*)
+			clear
+			echo -ne "$red Error, Press [ENTER] key go to options menu"
+			read -n 1 key
+			menu
+			;;
+		esac
+		;;
+	2)
+		echo ""
+		echo -e "   $oakgreen|-$yellow[$cyan 1 $yellow] $orange-Scan One or some ip on the local network"
+		echo -e "   $oakgreen|"
+		echo -e "   $oakgreen|-$yellow[$cyan 2 $yellow] $orange-Scan All ip on the local network"
+		echo -e "   $oakgreen|"
+		echo -e $oakgreen"-----------------------------"
+		echo -e $oakgreen" |$green -[$red SystemSU$green ]-[$yellow Menu$green ] :$oakgreen |"
+		echo -e $oakgreen"-----------------------------"
+		echo -ne $oakgreen"   └────► ";tput sgr0
+		read Choice1
+		case $Choice1 in
+			1)
+			oneipos
+			;;
+			2)
+			allipos
+			;;
+			*)
+			clear
+			echo -ne "$red Error, Press [ENTER] key go to options menu"
+			read -n 1 key
+			menu
+			;;		
+		esac
+		;;
+	3)
+		web-sitescan
+		;;
+	4)
+		iplocalize
+		;;
+	5)
+		clear
+		echo -e $BlueF "Script dev by Théodore Prévot."
+		echo -e $BlueF "Good bye..."
+		sleep 1
+		exit 0
+		;;
+	*)
+		clear
+		echo -ne "$red Error, Press [ENTER] key go to options menu"
+		read -n 1 key
+		menu
+		;;
+esac
+
+
+}
+###########
+#MAIN######
+###########
+#Joli Dessin
+clear
+echo -e $pink "		 _    _     ___     _    _        _       _"
+echo -e $pink "		|:|  |:|   /:::\   |:|  |:|      |_ | |  |_"
+echo -e $pink "		|:|  |:|  /:/'\:\  |:|  |:|      |  | |_ |_"
+echo -e $pink "		|:|__|:| |:|   |:| |:|__|:|           _  ___"
+echo -e $pink "		|::::::| |:|   |:| |::::::|     |\ | / \  |"
+echo -e $pink "		'''''|:| |:|   |:| '''''|:|     | \| \_/  |"
+echo -e $pink "		     |:| |:|   |:|      |:|   _  _            _"
+echo -e $pink "		     |:| |:\   |:|      |:|  |_ / \ | | |\ | | \ "
+echo -e $pink "		     |:|  \:\_/:/       |:|  |  \_/ \_/ | \| |_/"
+echo -e $pink "		     |:|   \:::/        |:| "
+echo -e $pink "		     '''    ' '         ''' "
+echo
+echo
+echo -e "	 		$red Checking Dependencies"
+sleep 1
+echo 
+echo
+
+#Check internet connexion
+echo -e $oakgreen "[*] Internet Connexion Checking ..."
+sleep 2
+echo ""
+ping -c 1 8.8.4.4 > /dev/null 2>&1
+png="$?"
+ if [ $png == "0" ]
+then
+    echo -e $oakgreen [✔]::[Internet]: connexion found!;
+    sleep 1
+    echo ""
+elif [ $png == "1" ]
+then
+    echo -e $yellow "You are connected to your local network but not to the Internet ."
+    echo ""
+    echo -e $red "You need to be connected to use SystemSU."
+    echo ""
+    sleep 1
+	echo -e $BlueF "Script dev by Théodore Prévot."
+	echo -e $BlueF "Good bye..."
+	sleep 1
+	exit 0
+elif [ $png == "2" ]
+then
+	echo -e $red "You are not connected to the Internet ."
+	echo ""
+	echo -e $red "You need to be connected to use SystemSU."
+	echo ""
+	sleep 1
+	echo -e $BlueF "Script dev by Théodore Prévot."
+	echo -e $BlueF "Good bye..."
+	sleep 1
+	exit 0
+fi
+
+#Check root
+if [ "$UID" -ne "$UID_ROOT" ]
+then
+	echo -e "$red [x]::[warning]:this script requires root access to run"
+	sleep 1
+	exit $E_NONROOT
+else
+	echo -e "$oakgreen [✔]::[Root]: Root privileges granted!"
+	sleep 0.5
+	echo ""
+fi
+
+#Check dependicies
+
+#Check if Nmap exists
+which nmap > /dev/null 2>&1
+if [ "$?" -eq "0" ]; then
+	echo -e "$oakgreen [✔]::[Nmap]: Installation found!"
+	sleep 0.7
+	echo ""
+else
+   echo -e "$red [x]::[warning]:this script require Nmap to run!"
+   echo ""
+   echo -e "$red [!]::Run setup.sh to install Nmap!"
+   echo ""
+   sleep 1
+   exit 1
+fi
+
+#Check if Geoip exists
+which  geoiplookup > /dev/null 2>&1
+if [ "$?" -eq "0" ]; then
+	echo -e "$oakgreen [✔]::[GeoIP]: Installation found!"
+	sleep 1
+	echo ""
+else
+   echo -e "$red [x]::[warning]:this script require GEOIP to run!"
+   echo ""
+   echo -e "$red [!]::Run setup.sh to install GeoIP" 
+   echo ""
+   sleep 1
+   exit 1
+fi
+
+#Check if GeoLiteCity exists
+test -f /usr/share/GeoIP/GeoLiteCity.dat
+if [ "$?" -eq "0" ]; then
+	echo -e "$oakgreen [✔]::[GeoLiteCity]: Installation found!"
+	sleep 1
+	echo ""
+else
+   echo -e "$red [x]::[warning]:this script require GeoLiteCity to run!"
+   echo ""
+   echo -e "$red [!]::Run setup.sh to install GeoLiteCity!"
+   echo ""
+   sleep 0.3
+   exit 1
+fi
+read -rsp $' Press [ENTER] key to continue \n' -n 1 key
+
+#ctrl_c detect
+trap ctrl_c INT
+ctrl_c() {
+clear
+echo -e $red" [*] (Ctrl + C ) Detected, quitting... "
+	sleep 1
+	echo -e $BlueF " Script dev by Théodore Prévot."
+	echo -e $BlueF " Good bye..."
+	sleep 1
+	exit 1
+}
+
+menu
+
