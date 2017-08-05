@@ -142,8 +142,8 @@ read URL
 nmap $URL > logtemp.txt
 lastip=$(grep "Nmap scan report" logtemp.txt | cut -d"(" -f2 | cut -d")" -f1)
 lastipname=$URL
+cat logtemp.txt
 rm logtemp.txt
-nmap $URL 
 echo ""
 read -rsp $'Press [ENTER] key go to options menu \n' -n 1 key
 menu
@@ -175,7 +175,8 @@ case $Choice in
 			geoiplookup $lastip -f $pathgeoip > logtemp.txt
 			latitude=$(grep "GeoIP" logtemp.txt | cut -f7 -d',' | sed -e "s/ //g")
 			longitude=$(grep "GeoIP" logtemp.txt | cut -f8 -d',' | sed -e "s/ //g")
-			geoiplookup $lastip -f $pathgeoip
+			cat logtemp.txt
+			rm logtemp.txt
 			echo ""
 			echo -ne "You can see the location at this URL :"
 			echo -e " https://www.google.fr/maps/place/$latitude,$longitude"
@@ -196,7 +197,8 @@ case $Choice in
 		geoiplookup $ip -f $pathgeoip > logtemp.txt
 		latitude=$(grep "GeoIP" logtemp.txt | cut -f7 -d',' | sed -e "s/ //g")
 		longitude=$(grep "GeoIP" logtemp.txt | cut -f8 -d',' | sed -e "s/ //g")
-		geoiplookup $ip -f $pathgeoip
+		cat logtemp.txt
+		rm logtemp.txt
 		echo ""
 		echo -ne "You can see the location at this URL :"
 		echo -e " https://www.google.fr/maps/place/$latitude,$longitude"
