@@ -167,7 +167,10 @@ fi
 echo -e $yellow "[*] Creation of a link..."
 dir=`pwd`
 cd /usr/bin/
-rm systemsu
+which systemsu
+if [ "$?" -eq "0" ]; then 
+	rm systemsu
+fi
 ln -s $dir/SystemSU systemsu
 cd $dir
 test -f /usr/bin/systemsu
