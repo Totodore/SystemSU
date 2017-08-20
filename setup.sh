@@ -149,7 +149,7 @@ else
    	echo -e $yellow " [*] Installing GeoLiteCity..."
    	echo
    	sudo wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz &> /dev/null
-   	sudo gunzip GeoLiteCity.dat.gz
+   	sudo gunzip -d GeoLiteCity.dat.gz
    	sudo mv GeoLiteCity.dat /usr/share/GeoIP/
    	test -f /usr/share/GeoIP/GeoLiteCity.dat
 	if [ "$?" -eq "0" ]; then
